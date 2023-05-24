@@ -86,6 +86,13 @@ SECTIONS
         *(.srodata.*)
 
         . = ALIGN(4);
+        /* Added */
+        /* static fw attribute entry */
+        _bl_static_fw_cfg_entry_start = .;
+        KEEP(*(.wifi.cfg.entry))
+        _bl_static_fw_cfg_entry_end = .;
+        . = ALIGN(4);
+        /* -- */
         __text_code_end__ = .;
     } > xip_memory
 
