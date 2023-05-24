@@ -1,0 +1,6 @@
+config COMPONENT_WIFI
+    bool "Wifi Support for Linux"
+    default n
+    help
+        Wifi Component forwards the wifi packets recieved to Linux
+#default y if BFLB_CHIP = "bl808"
