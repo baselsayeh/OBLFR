@@ -278,5 +278,8 @@ SECTIONS
     __HeapLimit = ORIGIN(ram_memory) + LENGTH(ram_memory);
     ASSERT(__HeapLimit - __HeapBase >= HeapMinSize, "heap region overflow")
 
+    PROVIDE( _ld_bl_static_cfg_entry_start = _bl_static_fw_cfg_entry_start );
+    PROVIDE( _ld_bl_static_cfg_entry_end   = _bl_static_fw_cfg_entry_end );
+
 }
 
