@@ -2,6 +2,9 @@
 #include <csi_core.h>
 #include <risc-v/csr.h>
 
+void _putstr(char *str);
+void _puthex(uint32_t val);
+
 //Instruction length
 uint32_t get_inst_size(uint32_t inst) {
     if ((inst & 0x3) == 0) //least two significant bits are zeros: 16 bit
@@ -14,9 +17,31 @@ uint32_t get_inst_size(uint32_t inst) {
     return 4;
 }
 //
-// Assuming 16-bit instructions
-uint32_t get_16_rd_register(uint32_t inst) { //rs2
-    return ((inst >> 2) & 0x7) + 0x8;
+uint32_t __get_dest_reg_32(uint32_t inst) {
+    switch ( (inst>>2) & 0x1F) {
+        case 0b00000: //rd
+            return ((inst >> 7) & 0x1F);
+            break;
+
+        case 0b01000:
+            return ((inst >> 20) & 0x1F);
+            break;
+
+        default:
+            _putstr("Unknown destination register for instruction ");
+            _puthex(inst);
+            _putstr("\r\n");
+            break;
+    }
+
+    return 31; //t6
+}
+uint32_t __get_dest_reg(uint32_t inst) {
+    if (get_inst_size(inst) == 2)
+        return ((inst >> 2) & 0x7) + 0x8; //rs2
+
+    //4-byte size
+    return __get_dest_reg_32(inst);
 }
 /*uint32_t get_16_rs1_register(uint32_t inst) {
     return ((inst >> 7) & 0x7) + 0x8;
@@ -122,21 +147,22 @@ void __pmp_exception(uintptr_t *regs, bool write) {
 #endif
 
     // Read from/Write into the memory location
-    if (get_inst_size( *(uint32_t *)epc ) == 2) {
-        if (write) {
-            temp_val = regs[get_16_rd_register(*(uint32_t *)epc)];
-            *mem_addr = temp_val;
-        } else {
-            temp_val = *mem_addr;
-            //temp_val = 0xDEADBEEF;
-            reg[get_16_rd_register(*(uint32_t *)epc)] = temp_val;
-        }
-        _putstr("Value: ");
-        _puthex((uint32_t)temp_val);
-        _putstr("\r\n");
+    //if (get_inst_size( *(uint32_t *)epc ) == 2) {
+    if (write) {
+        temp_val = regs[__get_dest_reg(*(uint32_t *)epc)];
+        *mem_addr = temp_val;
     } else {
-        _putstr("Unsupported Read/write 4-byte instruction\r\n");
+        temp_val = *mem_addr;
+        //temp_val = 0xDEADBEEF;
+        reg[__get_dest_reg(*(uint32_t *)epc)] = temp_val;
     }
+    _putstr("Value: ");
+    _puthex((uint32_t)temp_val);
+    _putstr("\r\n");
+    /*} else {
+        _putstr("Unsupported Read/write 4-byte instruction\r\n");
+        _puthex(get_16_rd_register(*(uint32_t *)epc));
+    }*/
 
     //Advance PC so that it does not return
     //PC reg is at 0
