@@ -2,7 +2,7 @@
 CONFIG_LOG_LEVEL=5
 # CONFIG_FREERTOS is not set
 
-# CONFIG_PSRAM is not set
+CONFIG_PSRAM=y
 
 # Disable mailbox
 # CONFIG_COMPONENT_MAILBOX is not set
