@@ -72,7 +72,7 @@ int main(void)
     LOG_I("PMP Testing Done ...\r\n");
     //
 
-    //////printf("PMP val: %08x, %08x\r\n", ((uint32_t *)0x53FC0000)[0], ((uint32_t *)0x53FA0000)[0]);
+    printf("PMP val: %08x, %08x\r\n", ((uint32_t *)0x53FC0000)[0], ((uint32_t *)0x53FA0000)[0]);
 
     while (1)
     {

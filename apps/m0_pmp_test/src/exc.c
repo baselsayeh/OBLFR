@@ -14,6 +14,14 @@ uint32_t get_inst_size(uint32_t inst) {
     return 4;
 }
 //
+// Assuming 16-bit instructions
+uint32_t get_16_rd_register(uint32_t inst) { //rs2
+    return ((inst >> 2) & 0x7) + 0x8;
+}
+/*uint32_t get_16_rs1_register(uint32_t inst) {
+    return ((inst >> 7) & 0x7) + 0x8;
+}*/
+//
 
 ///////
 #include <bflb_uart.h>
@@ -38,7 +46,7 @@ uint8_t __hex_vals[] = "0123456789abcdef";
 void _puthex(uint32_t val) {
     uint8_t data[9];
 
-    data[9] = 0;
+    data[8] = 0;
     for (uint32_t i=0; i<8; i++) {
         data[i] = __hex_vals[(val>>(28-(i*4)))&0xf];
     }
@@ -70,6 +78,7 @@ void __pmp_exception(uintptr_t *regs, bool write) {
     unsigned long epc;
     unsigned long tval;
     uint32_t *reg = (uint32_t *)regs;
+    uint32_t temp_val;
 
     uint32_t *mem_addr;
 
@@ -90,15 +99,26 @@ void __pmp_exception(uintptr_t *regs, bool write) {
     _puthex((uint32_t)epc);
     _putstr("\r\n");
 
-#if 1
+#if 0
     __handler_dump_regs(reg);
 #endif
 
     // Read from/Write into the memory location
-    /*if (write)
-        *mem_addr = 0xDDDDDDDD;
-    else
-        reg[1] = *mem_addr;*/
+    if (get_inst_size( *(uint32_t *)epc ) == 2) {
+        if (write) {
+            temp_val = regs[get_16_rd_register(*(uint32_t *)epc)];
+            //*mem_addr = temp_val;
+        } else {
+            //temp_val = *mem_addr;
+            temp_val = 0xDEADF00D;
+            reg[get_16_rd_register(*(uint32_t *)epc)] = temp_val;
+        }
+        _putstr("Value: ");
+        _puthex((uint32_t)temp_val);
+        _putstr("\r\n");
+    } else {
+        _putstr("Unsupported Read/write 4-byte instruction\r\n");
+    }
 
     //Advance PC so that it does not return
     //PC reg is at 0
