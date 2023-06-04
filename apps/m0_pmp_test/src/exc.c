@@ -72,6 +72,24 @@ void __handler_dump_regs(uint32_t *regs) {
     //////
 }
 
+void __mstatus_set_mprv(uint8_t mprv_bit) {
+    uint32_t mstatus;
+    mstatus = READ_CSR(CSR_MSTATUS);
+
+    mstatus &= ~(1<<17);
+    mstatus |= ((mprv_bit&0x1)<<17); //MPRV bit
+
+    WRITE_CSR(CSR_MSTATUS, mstatus);
+}
+void __mstatus_set_mpp(uint8_t mpp_bits) {
+    uint32_t mstatus;
+    mstatus = READ_CSR(CSR_MSTATUS);
+
+    mstatus &= ~((1<<11) | (1<<12));
+    mstatus |= ((mpp_bits&0x3)<<11);
+
+    WRITE_CSR(CSR_MSTATUS, mstatus);
+}
 //void __pmp_write_exception(uintptr_t *regs) {
 void __pmp_exception(uintptr_t *regs, bool write) {
     //unsigned long cause;
@@ -107,10 +125,10 @@ void __pmp_exception(uintptr_t *regs, bool write) {
     if (get_inst_size( *(uint32_t *)epc ) == 2) {
         if (write) {
             temp_val = regs[get_16_rd_register(*(uint32_t *)epc)];
-            //*mem_addr = temp_val;
+            *mem_addr = temp_val;
         } else {
-            //temp_val = *mem_addr;
-            temp_val = 0xDEADF00D;
+            temp_val = *mem_addr;
+            //temp_val = 0xDEADBEEF;
             reg[get_16_rd_register(*(uint32_t *)epc)] = temp_val;
         }
         _putstr("Value: ");
@@ -130,6 +148,7 @@ void __dump_exception_entry(uintptr_t *regs);
 //void exception_entry(uintptr_t *regs) {
 void exception_entry(uintptr_t *regs) {
     unsigned long cause;
+    uint8_t c;
 
     cause = READ_CSR(CSR_MCAUSE);
 
@@ -137,11 +156,14 @@ void exception_entry(uintptr_t *regs) {
         __dump_exception_entry(regs);
         return;
     }*/
+    c = cause&0xFF;
 
-    switch ((int)cause) {
-        case 0x38000007: //PMP write
-        case 0x38000005: //PMP Read
-            __pmp_exception(regs, ((int)cause)==0x38000007?true:false );
+    switch (c) {
+        case 0x07: //Store/AMO access fault
+        case 0x05: //Load access fault
+            //__pmp_set_mprv(0);
+            __pmp_exception(regs, ((int)c)==0x07?true:false );
+            //__pmp_set_mprv(1);
             //__pmp_read_exception(regs);
             break;
 

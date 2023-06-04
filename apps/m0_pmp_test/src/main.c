@@ -35,17 +35,43 @@
 void iiinnniiittt_pmp() {
     int ret;
 
-    const pmp_config_entry_t pmp_entry_tab[2] = {
+    //const pmp_config_entry_t pmp_entry_tab[6] = {
+    const pmp_config_entry_t pmp_entry_tab[] = {
         /* no access */
-        [0] = {
-            .entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_M_MODE_L,
+        //[0] = {
+        {
+            //.entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_M_MODE_L,
+            .entry_flag = ENTRY_FLAG_ADDR_NAPOT,
             .entry_pa_base = 0x53FC0000,
             .entry_pa_length = PMP_REG_SZ_128B,
         },
-        [1] = {
-            .entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_M_MODE_L, //Omitting ENTRY_FLAG_M_MODE_L will make it not fire an exception for m mode
+        {
+            //.entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_M_MODE_L, //Omitting ENTRY_FLAG_M_MODE_L will make it not fire an exception for m mode
+            .entry_flag = ENTRY_FLAG_ADDR_NAPOT,
             .entry_pa_base = 0x53FA0000,
             .entry_pa_length = PMP_REG_SZ_128B,
+        },
+
+        //Covers the rest as RWX
+        {
+            .entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_PERM_R|ENTRY_FLAG_PERM_W|ENTRY_FLAG_PERM_X,
+            .entry_pa_base = 0x0,
+            .entry_pa_length = PMP_REG_SZ_1G,
+        },
+        {
+            .entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_PERM_R|ENTRY_FLAG_PERM_W|ENTRY_FLAG_PERM_X,
+            .entry_pa_base = 0x40000000,
+            .entry_pa_length = PMP_REG_SZ_1G,
+        },
+        {
+            .entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_PERM_R|ENTRY_FLAG_PERM_W|ENTRY_FLAG_PERM_X,
+            .entry_pa_base = 0x80000000,
+            .entry_pa_length = PMP_REG_SZ_1G,
+        },
+        {
+            .entry_flag = ENTRY_FLAG_ADDR_NAPOT | ENTRY_FLAG_PERM_R|ENTRY_FLAG_PERM_W|ENTRY_FLAG_PERM_X,
+            .entry_pa_base = 0xC0000000,
+            .entry_pa_length = PMP_REG_SZ_1G,
         },
     };
     ret = rvpmp_init(pmp_entry_tab, sizeof(pmp_entry_tab) / sizeof(pmp_config_entry_t));
@@ -53,6 +79,14 @@ void iiinnniiittt_pmp() {
 }
 
 #include "exc.c"
+
+void __activate_mprv() {
+    __mstatus_set_mprv(1);
+    __mstatus_set_mpp(0x03);
+
+    __asm__ volatile ("csrw mepc, ra");
+    __asm__ volatile ("mret");
+}
 
 int main(void)
 {
@@ -65,6 +99,13 @@ int main(void)
     iiinnniiittt_pmp();
     LOG_I("PMP Init Done ...\r\n");
     //
+
+    //Activate MPRV
+    LOG_I("Activating MPRV...\r\n");
+    //__pmp_set_mprv(1);
+    __activate_mprv();
+    LOG_I("MPRV Acrivated!\r\n");
+
     //Tese the pmp by writing to undefined area
     LOG_I("Testing PMP ...\r\n");
     ((uint32_t *)0x53FC0000)[0] = 0xDEADBEEF;
