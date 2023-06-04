@@ -1,0 +1,14 @@
+# CONFIG_PINMUX_ENABLE_SDH is not set
+CONFIG_LOG_LEVEL=5
+# CONFIG_FREERTOS is not set
+
+# CONFIG_PSRAM is not set
+
+# Disable mailbox
+# CONFIG_COMPONENT_MAILBOX is not set
+# CONFIG_COMPONENT_MAILBOX_IRQFWD_SDH is not set
+# CONFIG_COMPONENT_MAILBOX_IRQFWD_GPIO is not set
+
+# Disable Wifi
+# CONFIG_COMPONENT_WIFI is not set
+# COMPONENT_WIFI_MINIMAL is not set
