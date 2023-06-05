@@ -8,3 +8,5 @@ sdk_add_subdirectory_ifdef(CONFIG_COMPONENT_TIMER timer)
 sdk_add_subdirectory_ifdef(CONFIG_COMPONENT_NVKVS nvkvs)
 sdk_add_subdirectory_ifdef(CONFIG_COMPONENT_RPMSG rpmsg)
 sdk_add_subdirectory_ifdef(CONFIG_COMPONENT_MAILBOX mailbox)
+
+sdk_add_subdirectory_ifdef(CONFIG_COMPONENT_TRAP_INTERCEPTOR trap_interceptor)

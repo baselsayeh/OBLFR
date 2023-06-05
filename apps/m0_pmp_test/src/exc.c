@@ -170,9 +170,8 @@ void __pmp_exception(uintptr_t *regs, bool write) {
     reg[0] += get_inst_size( *(uint32_t *)epc );
 }
 
-void __dump_exception_entry(uintptr_t *regs);
 //void exception_entry(uintptr_t *regs) {
-void exception_entry(uintptr_t *regs) {
+int hook_trap_entry(uintptr_t *regs) {
     unsigned long cause;
     uint8_t c;
 
@@ -191,11 +190,14 @@ void exception_entry(uintptr_t *regs) {
             __pmp_exception(regs, ((int)c)==0x07?true:false );
             //__pmp_set_mprv(1);
             //__pmp_read_exception(regs);
+            return 0;
             break;
 
         default:
-            __dump_exception_entry(regs);
+            //__dump_exception_entry(regs);
             break;
     }
+
+    return 1;
 }
 

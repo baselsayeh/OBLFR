@@ -1,15 +1,3 @@
-diff -Naur a/drivers/soc/bl808/std/startup/m0/interrupt.c b/drivers/soc/bl808/std/startup/m0/interrupt.c
---- a/drivers/soc/bl808/std/startup/m0/interrupt.c	2023-06-04 19:39:33.392374931 +0300
-+++ b/drivers/soc/bl808/std/startup/m0/interrupt.c	2023-06-04 19:40:35.708376077 +0300
-@@ -115,7 +115,7 @@
-     default_interrupt_handler, //WIFI_IPC_PUBLIC_IRQHandler_Wrapper,      /* 16 + 63 */
- };
- 
--void exception_entry(uintptr_t *regs)
-+void __dump_exception_entry(uintptr_t *regs)
- {
- #ifndef CONFIG_TRAP_DUMP_DISABLE
-     unsigned long cause;
 diff -Naur a/drivers/soc/bl808/std/startup/m0/system_bl808.c b/drivers/soc/bl808/std/startup/m0/system_bl808.c
 --- a/drivers/soc/bl808/std/startup/m0/system_bl808.c	2023-06-04 19:39:33.392374931 +0300
 +++ b/drivers/soc/bl808/std/startup/m0/system_bl808.c	2023-06-04 19:40:48.920376320 +0300

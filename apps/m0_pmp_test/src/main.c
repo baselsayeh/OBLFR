@@ -88,6 +88,8 @@ void __activate_mprv() {
     __asm__ volatile ("mret");
 }
 
+extern void hook_trap_handler();
+
 int main(void)
 {
     board_init();
@@ -106,6 +108,10 @@ int main(void)
     __activate_mprv();
     LOG_I("MPRV Acrivated!\r\n");
 
+    LOG_I("Setting MTVEC to the hook handler...\r\n");
+    WRITE_CSR(CSR_MTVEC, hook_trap_handler);
+    LOG_I("Done\r\n");
+
     //Tese the pmp by writing to undefined area
     LOG_I("Testing PMP ...\r\n");
     ((uint32_t *)0x53FC0000)[0] = 0xDEADBEEF;
@@ -120,4 +126,8 @@ int main(void)
         LOG_I("Waiting for inturrupts\r\n");
         __asm("wfi");
     }
+}
+
+void dest_trap_handler() {
+    __asm__ volatile ("j exception_entry");
 }

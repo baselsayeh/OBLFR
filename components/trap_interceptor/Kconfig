@@ -1,0 +1,3 @@
+config COMPONENT_TRAP_INTERCEPTOR
+    bool "Trap interceptor"
+    default n
