@@ -29,7 +29,7 @@ void fw_mac_setfreq() {
 
     //24b000f4 skipped
     //24b000f8 skipped
-    //24b00104 skipped *2
+    //24b00104 skipped *3
 }
 uint32_t fw_blmac_soft_reset_getf() {
     return (*(volatile uint32_t*)0x24b08050) & 1;
@@ -52,7 +52,8 @@ void fw_mac_init() { //hal_machw_init
     // toggling coex enable to reset?
     *(volatile uint32_t*)0x24b00400 |= 1; //*(volatile uint32_t*)0x24b00400 = 1;
     *(volatile uint32_t*)0x24b00400 &= 0xfffffffe; //*(volatile uint32_t*)0x24b00400 = 0;
-    *(volatile uint32_t*)0x24b00400 = 0x69; //*(volatile uint32_t*)0x24b00400 = 0x68;
+    *(volatile uint32_t*)0x24b00400 = 0x68; //*(volatile uint32_t*)0x24b00400 = 0x68;
+    *(volatile uint32_t*)0x24b00400 |= 1;
     // disable coexAutoPTIAdj
     *(volatile uint32_t*)0x24b00400 &= ~0x20;
     // sysctrl92 ptr config
@@ -96,7 +97,7 @@ void fw_mac_init() { //hal_machw_init
 
     //Continue
     // edca control
-    *(volatile uint32_t*)0x24b00224 = 0;
+    *(volatile uint32_t*)0x24b00224 = 0; //Different in log
     // max power level (ofdm/dsss = 32)
     *(volatile uint32_t*)0x24b000a0 = 0x2020;
 
@@ -113,6 +114,9 @@ void fw_mac_init() { //hal_machw_init
     //blmac_dyn_bw_en_setf
     temp = *(volatile uint32_t*)0x24b00310;
     *(volatile uint32_t*)0x24b00310 = (temp & 0xffffff7f) | ((1 & 0x1) << 7);
+
+    ///phy_get_ntx gets 24c00000
+    /////24b0009c skipped
 
     //blmac_tsf_mgt_disable_setf
     temp = *(volatile uint32_t*)0x24b0004c;

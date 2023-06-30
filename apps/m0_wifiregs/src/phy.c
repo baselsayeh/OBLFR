@@ -57,6 +57,7 @@ void fw_phy_agc_config() {
     *(volatile uint32_t*)0x24c0c044 = (temp & 0xffff0000) | 0x800;
 
     //phy_config_rxgain
+    //TODO: CHECK phy_config_rxgain
 
     temp = *(volatile uint32_t*)0x24c0b3a0;
     *(volatile uint32_t*)0x24c0b3a0 = (temp & 0xffffff00) | 0x9e;
@@ -88,15 +89,17 @@ void fw_phy_agc_config() {
 
 #include "mac.h"
 void fw_phy_agc_download() {
-    *(volatile uint32_t*)0x24c0b390 |= (~0xffffefff);
-    *(volatile uint32_t*)0x24c00874 |= (~0xdfffffff);
+    /**(volatile uint32_t*)0x24c0b390 |= (~0xffffefff);
+    *(volatile uint32_t*)0x24c00874 |= (~0xdfffffff);*/
+    *(volatile uint32_t*)0x24c0b390 &= 0xffffefff;
+    *(volatile uint32_t*)0x24c00874 &= 0xdfffffff;
 
     volatile uint32_t* agcram = (volatile uint32_t*)0x24c0a000;
     for (unsigned int i=0; i<(sizeof(agcmem)/4); i++)
         agcram[i] = agcmem[i];
 
-    *(volatile uint32_t*)0x24c0b390 &= 0xffffefff;
     *(volatile uint32_t*)0x24c00874 &= 0xdfffffff;
+    *(volatile uint32_t*)0x24c0b390 &= 0xffffefff;
 }
 
 void fw_phy_ldcp_download() {
@@ -137,6 +140,8 @@ void fw_phy_rfc_set_freq(uint32_t freq) { //From phy_set_channel & rfc_config_ch
     *(volatile uint32_t*)0x2000126c &= 0xfffffff7;
     wait_us(1);
     *(volatile uint32_t*)0x20001228 &= 0xfffffff7;
+
+    //20001680 skipped
 }
 void fw_phy_set_ch(uint32_t freq) { //phy_set_channel
     //Set in phy_set_channel

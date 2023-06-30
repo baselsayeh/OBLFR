@@ -81,15 +81,15 @@ void ffw_wifi_irq() {
     //LOG_I("WIFI IRQ!\r\n");
 }
 
-bool intc_is_pending(int num) {
+/*bool intc_is_pending(int num) {
     return *(volatile uint8_t*)(0x2800000 + num);
 }
 void intc_clear_pending(int num) {
     *(volatile uint8_t*)(0x2800000 + num) = 0;
-}
+}*/
 
 
-static int intc_irq_status_get() {
+/*static int intc_irq_status_get() {
     int ret = *(volatile int*)0x24910000;
     ret |= *(volatile int*)0x24910004;
     return ret;
@@ -105,6 +105,21 @@ void macss_irq() {
 
     int index = intc_irq_index_get();
     LOG_I("mac irq, index: %u\r\n", index);
+}*/
+
+void print_phy_version() {
+    uint32_t version_machw_1 = *(uint32_t *)0x24b00004;
+    uint32_t version_machw_2 = *(uint32_t *)0x24b00008;
+    uint32_t version_phy_1 = *(uint32_t *)0x24c00000;
+
+    LOG_I("\r\n");
+    LOG_I("[version]: lmac 5.4.0.0\r\n");
+    LOG_I("[version]: version_machw_1 %08x\r\n", version_machw_1);
+    LOG_I("[version]: version_machw_2 %08x\r\n", version_machw_2);
+    LOG_I("[version]: version_phy_1   %08x\r\n", version_phy_1);
+    LOG_I("[version]: version_phy_2   %08x\r\n", 0x00); //Hardcoded, see mm_version_req_handler & phy_get_version
+    LOG_I("[version]: features        %08x\r\n", 0x001089DF); //Hardcoded, see mm_version_req_handler
+    LOG_I("\r\n");
 }
 
 void wifi_fw_app(void *pvParameters) { //Wifi main
@@ -134,29 +149,25 @@ void wifi_fw_app(void *pvParameters) { //Wifi main
     bflb_irq_attach(70, ffw_wifi_irq, NULL);
     bflb_irq_enable(70); //WIFI_IRQn
 
-
-    *(volatile uint32_t*)0x24b00400 |= 1;
     LOG_I("rfc_init\r\n");
     //fw_rfc_init();
     //oblfr_rfc_init();
     rfc_init(40000000, 1);
     LOG_I("rfc_init finish\r\n");
 
+
+    *(volatile uint32_t*)0x24b00400 |= 1;
     //Rest
     ///Should be handled
     sysctrl_init();
 
 
-    /*LOG_I("mac_init\r\n");
+    LOG_I("mac_init\r\n");
     fw_mac_init();
     LOG_I("mac_init finish\r\n");
 
-    LOG_I("phy_init\r\n");
-    fw_phy_init();
-    LOG_I("phy_init finish\r\n");*/
-
     //bl_init();
-    hal_machw_init(); ///mac_init
+    //hal_machw_init(); ///mac_init
     //////rxl_init
     wifi_rxl_init();
 
@@ -167,13 +178,19 @@ void wifi_fw_app(void *pvParameters) { //Wifi main
     *(volatile uint32_t*)0x24b00400 |= 1;
     *(volatile uint32_t*)0x24b00400 &= 0xffffffdf;
 
+    //Print phy version
+    print_phy_version();
+
+    LOG_I("phy_init\r\n");
+    //fw_phy_init();
+    phy_init(&aaaaaa);
+    LOG_I("phy_init finish\r\n");
     //Set frequency
     //////fw_phy_set_ch(2437);
     //Set to monitor mode
     ////fw_mac_config_monitor_mode();
     LOG_I("Starting monitor ...\r\n");
     //fw_mac_config_monitor_mode();
-    phy_init(&aaaaaa);
     ////////fw_mac_config_monitor_mode();
     phy_set_channel('\0','\0',0x985,0x985,0,'\0');
 
@@ -198,3 +215,8 @@ void wifi_fw_app(void *pvParameters) { //Wifi main
         
     }
 }
+/*
+0x20001000: RCC
+0x24b00000: MAC
+0x24c00000: PHY
+*/
