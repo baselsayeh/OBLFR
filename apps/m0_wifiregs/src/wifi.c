@@ -149,6 +149,15 @@ void wifi_fw_app(void *pvParameters) { //Wifi main
     bflb_irq_attach(70, ffw_wifi_irq, NULL);
     bflb_irq_enable(70); //WIFI_IRQn
 
+    /* enable wifi clock */
+    GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
+    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
+
+    /* set ble controller EM Size */
+    GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
+
+    LOG_I("Clocks Init Done\r\n");
+
     LOG_I("rfc_init\r\n");
     //fw_rfc_init();
     //oblfr_rfc_init();
